@@ -63,6 +63,9 @@ def forecast_investment_gap(region_df, periods=5):
     # load from csv
     # forecast_df = pd.read_csv('investment_gap_forecast.csv')
     # forecast_df['ds'] = pd.to_datetime(forecast_df['ds'])
+    # forecast_df = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].copy() # Keep confidence intervals
+    # forecast_df['Type'] = ['Historical'] * len(region_df) + ['Forecast'] * periods
+    # return forecast_df
 
     # or
 
@@ -88,9 +91,6 @@ def forecast_investment_gap(region_df, periods=5):
 
         return pd.concat([historical_df, forecast_df], ignore_index=True)
 
-    forecast_df = forecast[['ds', 'yhat', 'yhat_lower', 'yhat_upper']].copy() # Keep confidence intervals
-    forecast_df['Type'] = ['Historical'] * len(region_df) + ['Forecast'] * periods
-    return forecast_df
 
     # model = Prophet(yearly_seasonality=False, daily_seasonality=False, weekly_seasonality=False)
     # model.fit(region_df[['ds', 'y']])
