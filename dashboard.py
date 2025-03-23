@@ -59,7 +59,7 @@ def generate_forecasts():
     df_forecast = pd.read_csv('population_forecast.csv')
     return df_forecast
 
-def forecast_investment_gap(region_df, periods=5):
+# def forecast_investment_gap(region_df, periods=5):
     # load from csv
     # forecast_df = pd.read_csv('investment_gap_forecast.csv')
     # forecast_df['ds'] = pd.to_datetime(forecast_df['ds'])
@@ -71,26 +71,25 @@ def forecast_investment_gap(region_df, periods=5):
 
     # from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
-    def forecast_with_ets(region_df, periods=5):
-        region_df = region_df.sort_values('ds')
-        ts = region_df.set_index('ds')['y']
+def forecast_investment_gap(region_df, periods=5):
+    region_df = region_df.sort_values('ds')
+    ts = region_df.set_index('ds')['y']
 
-        model = ExponentialSmoothing(ts, trend='add', seasonal=None, damped_trend=True).fit()
-        forecast = model.forecast(periods)
+    model = ExponentialSmoothing(ts, trend='add', seasonal=None, damped_trend=True).fit()
+    forecast = model.forecast(periods)
 
-        forecast_df = pd.DataFrame({
-            'ds': pd.date_range(start=ts.index[-1] + pd.DateOffset(years=1), periods=periods, freq='Y'),
-            'yhat': forecast.values,
-            'Type': ['Forecast'] * periods
-        })
+    forecast_df = pd.DataFrame({
+        'ds': pd.date_range(start=ts.index[-1] + pd.DateOffset(years=1), periods=periods, freq='Y'),
+        'yhat': forecast.values,
+        'Type': ['Forecast'] * periods
+    })
 
-        # Добавим исторические данные
-        historical_df = region_df[['ds', 'y']].copy()
-        historical_df.rename(columns={'y': 'yhat'}, inplace=True)
-        historical_df['Type'] = 'Historical'
+    # Добавим исторические данные
+    historical_df = region_df[['ds', 'y']].copy()
+    historical_df.rename(columns={'y': 'yhat'}, inplace=True)
+    historical_df['Type'] = 'Historical'
 
-        return pd.concat([historical_df, forecast_df], ignore_index=True)
-
+    return pd.concat([historical_df, forecast_df], ignore_index=True)
 
     # model = Prophet(yearly_seasonality=False, daily_seasonality=False, weekly_seasonality=False)
     # model.fit(region_df[['ds', 'y']])
