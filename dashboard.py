@@ -526,25 +526,49 @@ if __name__ == "__main__":
         st.plotly_chart(fig_priority, use_container_width=True)
 
     # Function to create the animated map
+    # def create_animated_map(df, geojson_data, featureidkey, indicator_col):
+    #     fig = px.choropleth_mapbox(
+    #         df,
+    #         geojson=geojson_data,
+    #         locations='Region',
+    #         featureidkey=featureidkey,
+    #         color=indicator_col,
+    #         color_continuous_scale="Turbo",  # Customizable
+    #         mapbox_style="carto-positron",
+    #         zoom=3.2,
+    #         center={"lat": 50, "lon": 68},  # Approx. center of Kazakhstan
+    #         opacity=0.5,
+    #         labels={indicator_col: indicator_col},
+    #         animation_frame="Year",
+    #         height=600,
+    #         width=700
+    #     )
+    #     fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})  # Remove margins
+    #     return fig
     def create_animated_map(df, geojson_data, featureidkey, indicator_col):
-        fig = px.choropleth_mapbox(
-            df,
-            geojson=geojson_data,
-            locations='Region',
-            featureidkey=featureidkey,
-            color=indicator_col,
-            color_continuous_scale="Turbo",  # Customizable
-            mapbox_style="carto-positron",
-            zoom=3.2,
-            center={"lat": 50, "lon": 68},  # Approx. center of Kazakhstan
-            opacity=0.5,
-            labels={indicator_col: indicator_col},
-            animation_frame="Year",
-            height=600,
-            width=700
-        )
-        fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})  # Remove margins
-        return fig
+    # Получаем глобальные min и max для цветовой шкалы
+    vmin = df[indicator_col].min()
+    vmax = df[indicator_col].max()
+
+    fig = px.choropleth_mapbox(
+        df,
+        geojson=geojson_data,
+        locations='Region',
+        featureidkey=featureidkey,
+        color=indicator_col,
+        color_continuous_scale="Turbo",  # Можно заменить на 'Viridis' или 'Blues'
+        range_color=(vmin, vmax),  # <- фиксируем шкалу
+        mapbox_style="carto-positron",
+        zoom=3.2,
+        center={"lat": 50, "lon": 68},
+        opacity=0.5,
+        labels={indicator_col: indicator_col},
+        animation_frame="Year",
+        height=600,
+        width=700
+    )
+    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+    return fig
 
     st.subheader("Степень износа по регионам в разные года")
     st.write("Мы также решили визуализировать степень износа по регионам в разные года, а далее индекс потребности в инвестициях. "
