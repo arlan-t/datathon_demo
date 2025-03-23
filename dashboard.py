@@ -546,7 +546,7 @@ if __name__ == "__main__":
     #     fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})  # Remove margins
     #     return fig
     def create_animated_map(df, geojson_data, featureidkey, indicator_col):
-    # Получаем глобальные min и max для цветовой шкалы
+    # Получаем глобальные min и max значения для фиксированной цветовой шкалы
     vmin = df[indicator_col].min()
     vmax = df[indicator_col].max()
 
@@ -556,8 +556,8 @@ if __name__ == "__main__":
         locations='Region',
         featureidkey=featureidkey,
         color=indicator_col,
-        color_continuous_scale="Turbo",  # Можно заменить на 'Viridis' или 'Blues'
-        range_color=(vmin, vmax),  # <- фиксируем шкалу
+        color_continuous_scale="Turbo",  # можно заменить на 'Viridis', 'Plasma' и т.д.
+        range_color=(vmin, vmax),  # фиксируем цветовую шкалу
         mapbox_style="carto-positron",
         zoom=3.2,
         center={"lat": 50, "lon": 68},
@@ -567,7 +567,8 @@ if __name__ == "__main__":
         height=600,
         width=700
     )
-    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})
+
+    fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})  # убираем поля
     return fig
 
     st.subheader("Степень износа по регионам в разные года")
