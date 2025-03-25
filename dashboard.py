@@ -321,24 +321,62 @@ if __name__ == "__main__":
             name='Исторический износ',
             line=dict(color='purple')
         ))
+                
+        region_ols_data = region_ols_data.sort_values('Year')
+        ts_iznos = region_ols_data.set_index('Year')['Износ']
 
-        iznos_forecast = region_ols_data['Износ'].rolling(window=3, center=True).mean().shift(-1)
+        ets_model = ExponentialSmoothing(ts_iznos, trend='add', seasonal=None, damped_trend=True).fit()
 
+        smoothed_iznos = ets_model.fittedvalues
+
+        future_years = list(range(ts_iznos.index[-1] + 1, ts_iznos.index[-1] + 6))
+        forecast_iznos = ets_model.forecast(len(future_years))
+
+        fig_iznos = go.Figure()
+
+        # Исторические данные
         fig_iznos.add_trace(go.Scatter(
             x=region_ols_data['Year'],
-            y=iznos_forecast,
+            y=region_ols_data['Износ'],
             mode='lines+markers',
-            name='Предсказанный износ',
-            line=dict(color='orange', dash='dash')
-
+            name='Исторический износ',
+            line=dict(color='purple')
         ))
 
-        fig_iznos.update_layout(
-            title=f'Износ для {selected_region} области',
-            xaxis_title='Год',
-            yaxis_title='Износ (%)',
-            hovermode='x unified'
-        )
+        # Сглаженные значения
+        fig_iznos.add_trace(go.Scatter(
+            x=region_ols_data['Year'],
+            y=smoothed_iznos.values,
+            mode='lines+markers',
+            name='Сглаженный износ (ETS)',
+            line=dict(color='orange', dash='dot')
+        ))
+
+        # Прогноз на будущее
+        fig_iznos.add_trace(go.Scatter(
+            x=future_years,
+            y=forecast_iznos.values,
+            mode='lines+markers',
+            name='Прогноз износа',
+            line=dict(color='red', dash='dash')
+        ))
+        # iznos_forecast = region_ols_data['Износ'].rolling(window=3, center=True).mean().shift(-1)
+
+        # fig_iznos.add_trace(go.Scatter(
+        #     x=region_ols_data['Year'],
+        #     y=iznos_forecast,
+        #     mode='lines+markers',
+        #     name='Предсказанный износ',
+        #     line=dict(color='orange', dash='dash')
+
+        # ))
+
+        # fig_iznos.update_layout(
+        #     title=f'Износ для {selected_region} области',
+        #     xaxis_title='Год',
+        #     yaxis_title='Износ (%)',
+        #     hovermode='x unified'
+        # )
         with col2:
             st.plotly_chart(fig_iznos, use_container_width=False, width=600)
 
