@@ -199,6 +199,7 @@ if __name__ == "__main__":
         st.subheader("Forecast Details")
         if not forecast.empty:
             st.write(forecast[['Year', 'Population Forecast']])
+    st.title("THIS IS A TEST TITLE")
 
     st.subheader("Investment gap and depreciation")
     st.write("We decided to introduce a variable we called Investment Gap. This is an indicator that shows the difference between investment in fixed capital and the amount of depreciation."
