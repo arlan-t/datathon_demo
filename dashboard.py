@@ -114,7 +114,7 @@ if __name__ == "__main__":
     left_margin, center_plot, right_margin = st.columns([1, 2, 1])
 
     st.title("Demographic trends in the regions of Kazakhstan")
-    st.write("Population change plays an important role in the development of regions. We used the Exponential Smoothing method with trend (Double Exponential Smoothing), чтобы спрогнозировать численность населения на ближайшие 5 лет. "
+    st.write("Population change plays an important role in the development of regions. We used the Exponential Smoothing method with trend (Double Exponential Smoothing), in order to estimate population in the following 5 years. "
              "The model takes trends into account, smooths out fluctuations, and makes accurate predictions even in the presence of outliers. "
              "Note that there were changes in administrative boundaries in the 2020s, which may affect the correctness of the data.")
 
@@ -199,7 +199,6 @@ if __name__ == "__main__":
         st.subheader("Forecast Details")
         if not forecast.empty:
             st.write(forecast[['Year', 'Population Forecast']])
-    st.title("THIS IS A TEST TITLE")
 
     st.subheader("Investment gap and depreciation")
     st.write("We decided to introduce a variable we called Investment Gap. This is an indicator that shows the difference between investment in fixed capital and the amount of depreciation."
