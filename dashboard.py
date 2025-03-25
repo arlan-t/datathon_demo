@@ -113,16 +113,16 @@ if __name__ == "__main__":
     df_combined = merge_data(df_forecast, df_population)
     left_margin, center_plot, right_margin = st.columns([1, 2, 1])
 
-    st.title("Демографические тренды регионов Казахстана")
-    st.write("Изменение населения играет важную роль в развитии регионов. Мы использовали метод экспоненциального сглаживания с трендом (Exponential Smoothing), чтобы спрогнозировать численность населения на ближайшие 5 лет. "
-             "Модель учитывает тренды, сглаживает колебания и позволяет сделать аккуратные прогнозы даже при наличии пропусков. "
-             "Следует учитывать, что в 2020-х годах происходили изменения административных границ, что может повлиять на корректность данных.")
+    st.title("Demographic trends in the regions of Kazakhstan")
+    st.write("Population change plays an important role in the development of regions. We used the Exponential Smoothing method with trend (Double Exponential Smoothing), чтобы спрогнозировать численность населения на ближайшие 5 лет. "
+             "The model takes trends into account, smooths out fluctuations, and makes accurate predictions even in the presence of outliers. "
+             "Note that there were changes in administrative boundaries in the 2020s, which may affect the correctness of the data.")
 
     # st.title("Демографические тренды регионов Казахстана")
     # st.write("Изменение населения играет важную роль в развитии регионов. Мы использовали простую модель прогнозирования для предсказания населения на будущие 5 лет (пакет prophet в Python). "
     #          "Существуют аномалии в виде областей которые были разделены в 2020-ых годах.")
 
-    st.sidebar.header("Выбрать регион")
+    st.sidebar.header("Choose the region")
     regions = df_combined['Region'].unique().tolist()
     regions.insert(0, "Все")
     selected_region = st.sidebar.selectbox("Region", regions)
@@ -138,7 +138,7 @@ if __name__ == "__main__":
                 name=region,
             ))
         fig.update_layout(
-            title='Статистика населения по всем регионам',
+            title='Population by all regions',
             xaxis_title='Year',
             yaxis_title='Population',
             hovermode='x unified'
@@ -188,7 +188,7 @@ if __name__ == "__main__":
         ))
 
         fig.update_layout(
-            title=f'Статистика населения для {selected_region} области',
+            title=f'Population size for {selected_region} region',
             xaxis_title='Year',
             yaxis_title='Population',
             hovermode='x unified'
@@ -200,12 +200,12 @@ if __name__ == "__main__":
         if not forecast.empty:
             st.write(forecast[['Year', 'Population Forecast']])
 
-    st.subheader("Инвестиционный разрыв и износ")
-    st.write("Мы решили ввести переменную, которую назвали Инвестиционный разрыв. Это показатель, который показывает разницу между инвестициями в основной капитал и суммой износа."
-             "В свою очередь, сумма износа считается по формуле <<Наличие основных средств (начальная стоимость) * степень износа>>. "
-             "По сути, это показатель чистого дефицита инвестиций для каждого региона - сумма, нужная для полного восстановления инфраструктуры. "
-             "Мы также ипользовали линейную модель и прогнозировали инвестиционный разрыв на базе таких показателей как население, зарплата, "
-             "сальдо миграции, износ, и различные ВРП показатели.")
+    st.subheader("Investment gap and depreciation")
+    st.write("We decided to introduce a variable we called Investment Gap. This is an indicator that shows the difference between investment in fixed capital and the amount of depreciation."
+             "The amount of depreciation is calculated according to the formula << Fixed assets (initial value) * degree of depreciation>>. "
+             "In essence, it is a measure of the net investment gap for each region - the amount needed to fully restore infrastructure. "
+             "We also used a linear model and projected the investment gap based on indicators such as population and wages, "
+             "migration balance, depreciation, and various GRP indicators.")
 
     col1, col2 = st.columns(2)
     df_pivot = load_data()
@@ -249,9 +249,9 @@ if __name__ == "__main__":
                 ))
 
         fig_gap_all.update_layout(
-            title='Инвестиционный разрыв',
-            xaxis_title='Год',
-            yaxis_title='Инвестиционный разрыв (mln KZT)',
+            title='Investment gap',
+            xaxis_title='Year',
+            yaxis_title='Investment gap (mln KZT)',
             hovermode='x unified'
         )
         with col1:
@@ -265,13 +265,13 @@ if __name__ == "__main__":
                 x=region_data_iznos['Year'],
                 y=region_data_iznos['Износ'],
                 mode='lines+markers',
-                name=f"{region} - Износ"
+                name=f"{region} - Depreciation"
             ))
 
         fig_iznos_all.update_layout(
-            title='Износ',
-            xaxis_title='Год',
-            yaxis_title='Износ (%)',
+            title='Depreciation rate',
+            xaxis_title='Year',
+            yaxis_title='Depreciation (%)',
             hovermode='x unified'
         )
         with col2:
@@ -297,7 +297,7 @@ if __name__ == "__main__":
             x=region_ols_data['Year'],
             y=region_ols_data['Инвестиционный разрыв'],
             mode='lines+markers',
-            name='Исторический инвестиционный разрыв',
+            name='Historical investment gap',
             line=dict(color='blue')
         ))
 
@@ -305,7 +305,7 @@ if __name__ == "__main__":
             x=region_ols_data['Year'],
             y=smoothed_gap.values,
             mode='lines+markers',
-            name='Сглаженный разрыв (ETS)',
+            name='Smoothed gap (ETS)',
             line=dict(color='green', dash='dot')
         ))
 
@@ -314,14 +314,14 @@ if __name__ == "__main__":
             x=future_years_gap,
             y=forecast_gap.values,
             mode='lines+markers',
-            name='Прогноз инвестиционного разрыва (ETS)',
+            name='Investment gap prediction (ETS)',
             line=dict(color='red', dash='dash')
         ))
 
         fig_gap_ets.update_layout(
-            title=f'Прогноз инвестиционного разрыва (ETS) — {selected_region}',
-            xaxis_title='Год',
-            yaxis_title='Инвестиционный разрыв (mln KZT)',
+            title=f'Investment gap prediction (ETS) — {selected_region}',
+            xaxis_title='Year',
+            yaxis_title='Investment gap (mln KZT)',
             hovermode='x unified'
         )
 
@@ -366,7 +366,7 @@ if __name__ == "__main__":
             x=region_ols_data['Year'],
             y=region_ols_data['Износ'],
             mode='lines+markers',
-            name='Исторический износ',
+            name='Historical depreciation',
             line=dict(color='purple')
         ))
                 
@@ -387,7 +387,7 @@ if __name__ == "__main__":
             x=region_ols_data['Year'],
             y=region_ols_data['Износ'],
             mode='lines+markers',
-            name='Исторический износ',
+            name='Historical depreciation',
             line=dict(color='purple')
         ))
 
@@ -396,7 +396,7 @@ if __name__ == "__main__":
             x=region_ols_data['Year'],
             y=smoothed_iznos.values,
             mode='lines+markers',
-            name='Сглаженный износ (ETS)',
+            name='Smoothed depreciation (ETS)',
             line=dict(color='orange', dash='dot')
         ))
 
@@ -405,7 +405,7 @@ if __name__ == "__main__":
             x=future_years,
             y=forecast_iznos.values,
             mode='lines+markers',
-            name='Прогноз износа',
+            name='Depreciation rate prediction',
             line=dict(color='red', dash='dash')
         ))
         # iznos_forecast = region_ols_data['Износ'].rolling(window=3, center=True).mean().shift(-1)
@@ -428,7 +428,7 @@ if __name__ == "__main__":
         with col2:
             st.plotly_chart(fig_iznos, use_container_width=False, width=600)
 
-    st.subheader("ВДС по индустрии (нужно выбрать регион)")
+    st.subheader("Gross value added by industry (choose the region)")
 
     if selected_region:
         region_industry_data = df_pivot[df_pivot['Region'] == selected_region]
@@ -446,9 +446,9 @@ if __name__ == "__main__":
             ))
 
         fig_vds.update_layout(
-            title=f'ВДС по индустрии {selected_region}',
-            xaxis_title='Год',
-            yaxis_title='ВДС (mln tenge)',
+            title=f'Gross value added by industry {selected_region}',
+            xaxis_title='Year',
+            yaxis_title='GVA (mln tenge)',
             hovermode='x unified'
         )
 
@@ -456,9 +456,9 @@ if __name__ == "__main__":
 
 
     ### GDP Share Bar Chart ###
-    st.subheader("Доля ВВП по регионам")
+    st.subheader("GDP Share by Region")
 
-    selected_year = st.selectbox("Выбрать год", df_pivot['Year'].unique())
+    selected_year = st.selectbox("Chosen year", df_pivot['Year'].unique())
 
     gdp_share_data = df_pivot[df_pivot['Year'] == selected_year].sort_values('Доля ВВП', ascending=False)
 
@@ -469,7 +469,7 @@ if __name__ == "__main__":
     )])
 
     fig_gdp.update_layout(
-        title=f'Доля ВВП в {selected_year}',
+        title=f'The GDP Share in {selected_year}',
         xaxis_title='Region',
         yaxis_title='GDP Share (%)',
         xaxis={'categoryorder':'total descending'}
@@ -477,7 +477,7 @@ if __name__ == "__main__":
 
     st.plotly_chart(fig_gdp, use_container_width=True)
 
-    st.subheader("Доли регионов в ВВП по годам")
+    st.subheader("Region's GDP Share across years")
 
     fig_gdp_time = go.Figure()
 
@@ -501,19 +501,19 @@ if __name__ == "__main__":
     st.plotly_chart(fig_gdp_time, use_container_width=True)
 
     st.subheader("Infrastructure Need Index")
-    st.write("Мы также решили посчитать индекс потребности в инфраструктуре. Этот показатель позволяет оценить, какие регионы нуждаются в большем внимании в плане инфраструктуры. "
-             " Он рассчитывается на основе нормализованных износа, основных средств и населения каждого региона с весами 0.85, 0.1, и 0.05 соответственно. ")
+    st.write("We also decided to calculate an infrastructure need index. This index allows us to assess which regions need more attention in terms of infrastructure. "
+             " It is calculated based on normalised depreciation, fixed assets, and population of each region with weights of 0.85, 0.1, and 0.05 respectively. (Can be adjusted manually) ")
 
     #demo
-    st.sidebar.subheader("Настроить веса индекса")
+    st.sidebar.subheader("Customise undex weights")
 
-    w_iznos = st.sidebar.slider("Вес 'Износ'", 0.0, 1.0, 0.85, 0.05)
-    w_funds = st.sidebar.slider("Вес 'Основные средства (балансовая)'", 0.0, 1.0, 0.1, 0.05)
-    w_population = st.sidebar.slider("Вес 'Население'", 0.0, 1.0, 0.05, 0.05)
+    w_iznos = st.sidebar.slider("Weight of 'Depreciation'", 0.0, 1.0, 0.85, 0.05)
+    w_funds = st.sidebar.slider("Weight of 'Fixed assets (balance sheet)'", 0.0, 1.0, 0.1, 0.05)
+    w_population = st.sidebar.slider("Weight of 'Population'", 0.0, 1.0, 0.05, 0.05)
 
     total_weight = round(w_iznos + w_funds + w_population, 2)
     if total_weight != 1.0:
-        st.sidebar.warning("Сумма весов должна быть равна 1.0")
+        st.sidebar.warning("Sum of weights should be equal to 1.0")
 
     indicators = ['Износ', 'Основные средства (балансовая)', 'Население']
     weights = {'Износ': w_iznos, 'Основные средства (балансовая)': w_funds, 'Население': w_population}
@@ -573,7 +573,7 @@ if __name__ == "__main__":
         ))
 
         fig_need_vs_vrp.update_layout(
-            title=f'Infrastructure Need Index vs. ВРП рост для {selected_region} области',
+            title=f'Infrastructure Need Index vs. GRP growth for {selected_region} region',
             xaxis_title='Year',
             yaxis_title='Infrastructure Need Index',
             yaxis2=dict(
@@ -589,8 +589,8 @@ if __name__ == "__main__":
 
     # Investment Priority Index
     st.subheader("Investment Priority Index")
-    st.write("Мы решили далее экспериментировать с возможными метриками для оценки приоритетов инвестиций в региональную инфраструктуру. Так мы решили ввести показатель, который назвали Индекс приоритета инвестиций. "
-             "Его отличие от индекса потребности в инфраструктуре в том, что он взвешен по доле ВВП региона. Таким образом, мы можем оценить, какие регионы нуждаются в большем внимании в плане инфраструктуры также являясь важной составляющей экономики.")
+    st.write("We decided to further experiment with possible metrics for assessing priorities for investment in regional infrastructure. So we decided to introduce an indicator that we called the Investment Priority Index. "
+             "It differs from the Infrastructure Needs Index in that it is weighted by a region's share of GDP. Thus, we can assess which regions need more attention in terms of infrastructure also being an important component of the economy.")
 
     # Calculate Investment Priority Index (outside interactive parts)
     df_pivot['GDP_Share_Scaled'] = MinMaxScaler().fit_transform(df_pivot[['Доля ВВП']])
@@ -688,10 +688,10 @@ if __name__ == "__main__":
         fig.update_layout(margin={"r": 0, "t": 0, "l": 0, "b": 0})  # убираем поля
         return fig
 
-    st.subheader("Степень износа по регионам в разные года")
-    st.write("Мы также решили визуализировать степень износа по регионам в разные года, а далее индекс потребности в инвестициях. "
-             "Мы выделили для себя несколько областей, которые нуждаются в большем внимании в плане дополнительных инвестиций в инфраструктуру:"
-             " Атырауская, Карагандинская, Актюбинская.")
+    st.subheader("Depreciation rate by region in different years")
+    st.write("We also decided to visualise the degree of depreciation by region in different years, followed by an index of investment needs. "
+             "We have identified for ourselves several areas that need more attention in terms of additional infrastructure investment:"
+             " Atyrau, Karagandy, and Aktobe.")
 
     col3, col4 = st.columns(2)
 
