@@ -278,40 +278,88 @@ if __name__ == "__main__":
             st.plotly_chart(fig_iznos_all, use_container_width=True)
     else:
         region_ols_data = ols_data[ols_data['Region'] == selected_region].copy()
+        
+        # Сортируем и создаем временной ряд
+        region_ols_data = region_ols_data.sort_values('Year')
+        ts_gap = region_ols_data.set_index('Year')['Инвестиционный разрыв']
 
-        for feature in features:
-            region_ols_data[feature + '_forecast'] = region_ols_data[feature].rolling(window=3, center=True).mean().shift(-1)
+        ets_model_gap = ExponentialSmoothing(ts_gap, trend='add', seasonal=None, damped_trend=True).fit()
 
-        future_X_region = region_ols_data[[feature + '_forecast' for feature in features]].copy()
-        future_X_region = sm.add_constant(future_X_region.dropna())  # Handle NaNs
+        smoothed_gap = ets_model_gap.fittedvalues
 
-        forecast_gap_ols = ols_model.predict(future_X_region) # Use the pre-fitted OLS model
+        # Прогноз на 5 лет
+        future_years_gap = list(range(ts_gap.index[-1] + 1, ts_gap.index[-1] + 6))
+        forecast_gap = ets_model_gap.forecast(len(future_years_gap))
 
-        fig_gap_ols = go.Figure()
-        fig_gap_ols.add_trace(go.Scatter(
+        fig_gap_ets = go.Figure()
+
+        fig_gap_ets.add_trace(go.Scatter(
             x=region_ols_data['Year'],
-            y=region_ols_data[target],
+            y=region_ols_data['Инвестиционный разрыв'],
             mode='lines+markers',
             name='Исторический инвестиционный разрыв',
             line=dict(color='blue')
         ))
 
-        fig_gap_ols.add_trace(go.Scatter(
+        fig_gap_ets.add_trace(go.Scatter(
             x=region_ols_data['Year'],
-            y=forecast_gap_ols,
+            y=smoothed_gap.values,
             mode='lines+markers',
-            name='Предсказанный инвестиционный разрыв (OLS)',
-            line=dict(color='green', dash='dash')
+            name='Сглаженный разрыв (ETS)',
+            line=dict(color='green', dash='dot')
         ))
 
-        fig_gap_ols.update_layout(
-            title=f'Инвестиционный разрыв для {selected_region} области',
-            xaxis_title='Year',
-            yaxis_title='Investment Gap (mln KZT)',
-            hovermode='x unified',
+        # Прогноз
+        fig_gap_ets.add_trace(go.Scatter(
+            x=future_years_gap,
+            y=forecast_gap.values,
+            mode='lines+markers',
+            name='Прогноз инвестиционного разрыва (ETS)',
+            line=dict(color='red', dash='dash')
+        ))
+
+        fig_gap_ets.update_layout(
+            title=f'Прогноз инвестиционного разрыва (ETS) — {selected_region}',
+            xaxis_title='Год',
+            yaxis_title='Инвестиционный разрыв (mln KZT)',
+            hovermode='x unified'
         )
+
+        # st.plotly_chart(fig_gap_ets, use_container_width=True)
+
+        # for feature in features:
+        #     region_ols_data[feature + '_forecast'] = region_ols_data[feature].rolling(window=3, center=True).mean().shift(-1)
+
+        # future_X_region = region_ols_data[[feature + '_forecast' for feature in features]].copy()
+        # future_X_region = sm.add_constant(future_X_region.dropna())  # Handle NaNs
+
+        # forecast_gap_ols = ols_model.predict(future_X_region) # Use the pre-fitted OLS model
+
+        # fig_gap_ols = go.Figure()
+        # fig_gap_ols.add_trace(go.Scatter(
+        #     x=region_ols_data['Year'],
+        #     y=region_ols_data[target],
+        #     mode='lines+markers',
+        #     name='Исторический инвестиционный разрыв',
+        #     line=dict(color='blue')
+        # ))
+
+        # fig_gap_ols.add_trace(go.Scatter(
+        #     x=region_ols_data['Year'],
+        #     y=forecast_gap_ols,
+        #     mode='lines+markers',
+        #     name='Предсказанный инвестиционный разрыв (OLS)',
+        #     line=dict(color='green', dash='dash')
+        # ))
+
+        # fig_gap_ols.update_layout(
+        #     title=f'Инвестиционный разрыв для {selected_region} области',
+        #     xaxis_title='Year',
+        #     yaxis_title='Investment Gap (mln KZT)',
+        #     hovermode='x unified',
+        # )
         with col1:
-            st.plotly_chart(fig_gap_ols, use_container_width=False, width=600)
+            st.plotly_chart(fig_gap_ets, use_container_width=False, width=600)
 
         fig_iznos = go.Figure()
         fig_iznos.add_trace(go.Scatter(
