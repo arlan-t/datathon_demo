@@ -727,7 +727,7 @@ if __name__ == "__main__":
     map_df_priority = map_df_priority.dropna(subset=['Investment_Priority_Index'])
 
     with col3:
-        animated_fig = create_animated_map(map_df, geojson_data, featureidkey, "Износ")
+        animated_fig = create_animated_map(map_df, geojson_data, featureidkey, "Depr")
         st.plotly_chart(animated_fig, use_container_width=True)
 
     with col4:
