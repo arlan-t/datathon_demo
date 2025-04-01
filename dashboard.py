@@ -505,7 +505,7 @@ if __name__ == "__main__":
              " It is calculated based on normalised depreciation, fixed assets, and population of each region with weights of 0.85, 0.1, and 0.05 respectively. (Can be adjusted manually) ")
 
     #demo
-    st.sidebar.subheader("Customise undex weights")
+    st.sidebar.subheader("Customise index weights for INI")
 
     w_iznos = st.sidebar.slider("Weight of 'Depreciation'", 0.0, 1.0, 0.85, 0.05)
     w_funds = st.sidebar.slider("Weight of 'Fixed assets (balance sheet)'", 0.0, 1.0, 0.1, 0.05)
