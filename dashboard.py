@@ -567,7 +567,7 @@ if __name__ == "__main__":
             x=region_data['Year'],
             y=region_data['VRP_Growth'],
             mode='lines+markers',
-            name='VRP Growth (%)',
+            name='GRP Growth (%)',
             yaxis='y2',
             line=dict(color='red')
         ))
@@ -577,7 +577,7 @@ if __name__ == "__main__":
             xaxis_title='Year',
             yaxis_title='Infrastructure Need Index',
             yaxis2=dict(
-                title='VRP Growth (%)',
+                title='GRP Growth (%)',
                 overlaying='y',
                 side='right',
                 color='red'
