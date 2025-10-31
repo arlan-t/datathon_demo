@@ -58,10 +58,7 @@ cluster_colors = {
     '3': 'green'   # above average
 }
 
-territories = sorted(df['territory_code'].unique())
-selected_territory = st.sidebar.selectbox("Select Territory Code:", territories)
-
-# optional: region name mapping (if you have oblast_to_region dict)
+# optional region name map
 oblast_to_region = {
     10: "Abai", 11: "Akmola", 15: "Atyrau", 27: "Zhambyl", 47: "Karaganda",
     55: "Kostanay", 59: "Kyzylorda", 71: "Pavlodar", 75: "North Kazakhstan",
@@ -69,66 +66,68 @@ oblast_to_region = {
 }
 
 # =====================
-# Plot
+# Generate plots for ALL regions
 # =====================
 sns.set(style="whitegrid", font_scale=1.1)
-subset = df[df['territory_code'] == selected_territory]
+territories = sorted(df['territory_code'].unique())
 
-fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True)
-title_prefix = (
-    oblast_to_region[int(selected_territory)]
-    if int(selected_territory) in oblast_to_region
-    else f"Territory {selected_territory}"
-)
-fig.suptitle(f"{title_prefix}: Dynamics by Cluster (Base Year 2020)",
-             fontsize=16, fontweight='bold')
+st.subheader(f"Dataset: {dataset_choice}")
 
-for i, (metric_col, title) in enumerate(metrics):
-    ax = axes[i]
-    sns.lineplot(
-        data=subset,
-        x='year',
-        y=metric_col,
-        hue='reassigned_cluster',
-        palette=cluster_colors,
-        marker='o',
-        ax=ax
+for territory in territories:
+    subset = df[df['territory_code'] == territory]
+
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True)
+
+    region_name = (
+        oblast_to_region.get(int(territory), f"Territory {territory}")
     )
+    fig.suptitle(f"{region_name}: Dynamics by Cluster (Base Year 2020)",
+                 fontsize=16, fontweight='bold')
 
-    y_min = subset[metric_col].min()
-    y_max = subset[metric_col].max()
-    y_range = y_max - y_min
-    margin = y_range * 0.15 if y_range > 0 else 10
-    ax.set_ylim(y_min - margin, y_max + margin)
+    for i, (metric_col, title) in enumerate(metrics):
+        ax = axes[i]
 
-    ax.set_title(title, fontsize=12, fontweight='bold')
-    ax.set_xlabel("Year")
-    ylabel = "Percentage Change (%)" if "%" in title else "Value (tenge)"
-    ax.set_ylabel(ylabel)
-    ax.axhline(0, color='gray', linestyle='--', linewidth=1)
-
-    if i == 2:
-        handles, labels = ax.get_legend_handles_labels()
-        ax.legend(
-            handles,
-            ['Below Avg (1)', 'Average (2)', 'Above Avg (3)'],
-            title="Cluster",
-            loc='upper left',
-            frameon=True
+        sns.lineplot(
+            data=subset,
+            x='year',
+            y=metric_col,
+            hue='reassigned_cluster',
+            palette=cluster_colors,
+            marker='o',
+            ax=ax
         )
-    else:
-        ax.get_legend().remove()
 
-fig.tight_layout(rect=[0, 0, 1, 0.95])
+        y_min = subset[metric_col].min()
+        y_max = subset[metric_col].max()
+        y_range = y_max - y_min
+        margin = y_range * 0.15 if y_range > 0 else 10
+        ax.set_ylim(y_min - margin, y_max + margin)
 
-st.pyplot(fig)
+        ax.set_title(title, fontsize=12, fontweight='bold')
+        ax.set_xlabel("Year")
+        ylabel = "Percentage Change (%)" if "%" in title else "Value (tenge)"
+        ax.set_ylabel(ylabel)
+        ax.axhline(0, color='gray', linestyle='--', linewidth=1)
+
+        if i == 2:
+            handles, labels = ax.get_legend_handles_labels()
+            ax.legend(
+                handles,
+                ['Below Avg (1)', 'Average (2)', 'Above Avg (3)'],
+                title="Cluster",
+                loc='upper left',
+                frameon=True
+            )
+        else:
+            ax.get_legend().remove()
+
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    st.pyplot(fig)
+    st.divider()  # adds a line between regions
 
 # =====================
-# Data Table
+# Info
 # =====================
-st.subheader("Summary Table")
-st.dataframe(subset.head(20), use_container_width=True)
-
 st.caption("""
 Clusters:
 - Cluster 1 – Below Average (Red)
