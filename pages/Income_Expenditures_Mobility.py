@@ -7,10 +7,9 @@ st.set_page_config(layout="wide")
 
 st.title("Regional Analysis: Income, Expenditures, and Social Mobility")
 st.write("""
-This tab presents visual analyses of **real income**, **expenditure**, and **household mobility**
-for all regions of Kazakhstan.  
-The first section shows all households, while the second focuses on households **present in all years (2020–2024)**,
-illustrating true **social mobility** dynamics.
+This section visualizes the dynamics of **income**, **expenditure**, and **household mobility** 
+for different socio-economic clusters (Below average, Average, Above average) across Kazakhstan’s regions.  
+Use the sidebar to switch between **All households** and **Stable households (present in all years)**.
 """)
 
 # =====================
@@ -23,6 +22,15 @@ def load_data():
     return all_df, unique_df
 
 final_df, final_allhh_df = load_data()
+
+# =====================
+# Sidebar Controls
+# =====================
+st.sidebar.header("Dataset selection")
+dataset_choice = st.sidebar.radio(
+    "Choose dataset:",
+    ["All households", "Stable households (present in all years)"]
+)
 
 # =====================
 # Common Formatting
@@ -61,133 +69,138 @@ oblast_to_region = {
 sns.set(style="whitegrid", font_scale=1.1)
 
 # =====================
-# 1️⃣ ALL HOUSEHOLDS
+# ALL HOUSEHOLDS
 # =====================
-st.subheader("All Households — Dynamics by Region and Cluster")
+if dataset_choice == "All households":
+    st.subheader("All Households — Dynamics by Region and Cluster")
 
-metrics_all = [
-    ("average_income_real", "Real Income"),
-    ("total_price_real", "Real Base Expenditure"),
-    ("household_code", "Household Mobility"),
-]
+    metrics = [
+        ("average_income_real", "Real Income"),
+        ("total_price_real", "Real Base Expenditure"),
+        ("household_code", "Household Mobility"),
+    ]
 
-territories = sorted(final_df["territory_code"].unique())
+    territories = sorted(final_df["territory_code"].unique())
 
-for territory in territories:
-    subset = final_df[final_df["territory_code"] == territory]
-    if subset.empty:
-        continue
+    for territory in territories:
+        subset = final_df[final_df["territory_code"] == territory]
+        if subset.empty:
+            continue
 
-    fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True)
-    region_name = oblast_to_region.get(int(territory), f"Territory {territory}")
-    fig.suptitle(
-        f"{region_name}: Dynamics by Cluster (Base Year 2020)",
-        fontsize=16,
-        fontweight="bold",
-    )
-
-    for i, (metric_col, title) in enumerate(metrics_all):
-        ax = axes[i]
-        sns.lineplot(
-            data=subset,
-            x="year",
-            y=metric_col,
-            hue="reassigned_cluster",
-            palette=cluster_colors,
-            marker="o",
-            ax=ax,
+        fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True)
+        region_name = oblast_to_region.get(int(territory), f"Territory {territory}")
+        fig.suptitle(
+            f"{region_name}: Dynamics by Cluster (Base Year 2020)",
+            fontsize=16,
+            fontweight="bold",
         )
 
-        y_min, y_max = subset[metric_col].min(), subset[metric_col].max()
-        y_range = y_max - y_min
-        margin = y_range * 0.15 if y_range > 0 else 10
-        ax.set_ylim(y_min - margin, y_max + margin)
-        ax.set_title(title, fontsize=12, fontweight="bold")
-        ax.set_xlabel("Year")
-        ax.set_ylabel("Value (tenge)")
-        ax.axhline(0, color="gray", linestyle="--", linewidth=1)
-
-        if i == 2:
-            handles, labels = ax.get_legend_handles_labels()
-            ax.legend(
-                handles,
-                ["Below Avg (1)", "Average (2)", "Above Avg (3)"],
-                title="Cluster",
-                loc="upper left",
-                frameon=True,
+        for i, (metric_col, title) in enumerate(metrics):
+            ax = axes[i]
+            sns.lineplot(
+                data=subset,
+                x="year",
+                y=metric_col,
+                hue="reassigned_cluster",
+                palette=cluster_colors,
+                marker="o",
+                ax=ax,
             )
-        else:
-            ax.get_legend().remove()
 
-    fig.tight_layout(rect=[0, 0, 1, 0.95])
-    st.pyplot(fig)
-    plt.close(fig)  # ✅ ensure each plot renders separately
-    st.divider()
+            y_min, y_max = subset[metric_col].min(), subset[metric_col].max()
+            y_range = y_max - y_min
+            margin = y_range * 0.15 if y_range > 0 else 10
+            ax.set_ylim(y_min - margin, y_max + margin)
+            ax.set_title(title, fontsize=12, fontweight="bold")
+            ax.set_xlabel("Year")
+            ax.set_ylabel("Value (tenge)")
+            ax.axhline(0, color="gray", linestyle="--", linewidth=1)
+
+            if i == 2:
+                handles, labels = ax.get_legend_handles_labels()
+                ax.legend(
+                    handles,
+                    ["Below Avg (1)", "Average (2)", "Above Avg (3)"],
+                    title="Cluster",
+                    loc="upper left",
+                    frameon=True,
+                )
+            else:
+                ax.get_legend().remove()
+
+        fig.tight_layout(rect=[0, 0, 1, 0.95])
+        st.pyplot(fig)
+        plt.close(fig)
+        st.divider()
 
 # =====================
-# 2️⃣ STABLE HOUSEHOLDS (present all years)
+# STABLE HOUSEHOLDS (present all years)
 # =====================
-st.subheader("Stable Households (Observed in All Years) — Social Mobility Dynamics")
+else:
+    st.subheader("Stable Households (Observed in All Years) — Social Mobility Dynamics")
 
-metrics_unique = [
-    ("income_pct_change", "Real Income Change (%)"),
-    ("price_pct_change", "Real Base Expenditure Change (%)"),
-    ("count_pct_change", "Real Household Mobility Change (%)"),
-]
+    metrics = [
+        ("income_pct_change", "Real Income Change (%)"),
+        ("price_pct_change", "Real Base Expenditure Change (%)"),
+        ("count_pct_change", "Real Household Mobility Change (%)"),
+    ]
 
-territories_unique = sorted(final_allhh_df["territory_code"].unique())
+    territories = sorted(final_allhh_df["territory_code"].unique())
 
-for territory in territories_unique:
-    subset = final_allhh_df[final_allhh_df["territory_code"] == territory]
-    if subset.empty:
-        continue
+    for territory in territories:
+        subset = final_allhh_df[final_allhh_df["territory_code"] == territory]
+        if subset.empty:
+            continue
 
-    fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True)
-    region_name = oblast_to_region.get(int(territory), f"Territory {territory}")
-    fig.suptitle(
-        f"{region_name}: Dynamics by Cluster (Households Present in All Years)",
-        fontsize=16,
-        fontweight="bold",
-    )
-
-    for i, (metric_col, title) in enumerate(metrics_unique):
-        ax = axes[i]
-        sns.lineplot(
-            data=subset,
-            x="year",
-            y=metric_col,
-            hue="reassigned_cluster",
-            palette=cluster_colors,
-            marker="o",
-            ax=ax,
+        fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True)
+        region_name = oblast_to_region.get(int(territory), f"Territory {territory}")
+        fig.suptitle(
+            f"{region_name}: Dynamics by Cluster (Households Present in All Years)",
+            fontsize=16,
+            fontweight="bold",
         )
 
-        y_min, y_max = subset[metric_col].min(), subset[metric_col].max()
-        y_range = y_max - y_min
-        margin = y_range * 0.15 if y_range > 0 else 10
-        ax.set_ylim(y_min - margin, y_max + margin)
-        ax.set_title(title, fontsize=12, fontweight="bold")
-        ax.set_xlabel("Year")
-        ax.set_ylabel("Percentage Change (%)")
-        ax.axhline(0, color="gray", linestyle="--", linewidth=1)
-
-        if i == 2:
-            handles, labels = ax.get_legend_handles_labels()
-            ax.legend(
-                handles,
-                ["Below Avg (1)", "Average (2)", "Above Avg (3)"],
-                title="Cluster",
-                loc="upper left",
-                frameon=True,
+        for i, (metric_col, title) in enumerate(metrics):
+            ax = axes[i]
+            sns.lineplot(
+                data=subset,
+                x="year",
+                y=metric_col,
+                hue="reassigned_cluster",
+                palette=cluster_colors,
+                marker="o",
+                ax=ax,
             )
-        else:
-            ax.get_legend().remove()
 
-    fig.tight_layout(rect=[0, 0, 1, 0.95])
-    st.pyplot(fig)
-    plt.close(fig)  # ✅ close figure so next one shows
-    st.divider()
+            y_min, y_max = subset[metric_col].min(), subset[metric_col].max()
+            y_range = y_max - y_min
+            margin = y_range * 0.15 if y_range > 0 else 10
+            ax.set_ylim(y_min - margin, y_max + margin)
+            ax.set_title(title, fontsize=12, fontweight="bold")
+            ax.set_xlabel("Year")
+            ax.set_ylabel("Percentage Change (%)")
+            ax.axhline(0, color="gray", linestyle="--", linewidth=1)
 
+            if i == 2:
+                handles, labels = ax.get_legend_handles_labels()
+                ax.legend(
+                    handles,
+                    ["Below Avg (1)", "Average (2)", "Above Avg (3)"],
+                    title="Cluster",
+                    loc="upper left",
+                    frameon=True,
+                )
+            else:
+                ax.get_legend().remove()
+
+        fig.tight_layout(rect=[0, 0, 1, 0.95])
+        st.pyplot(fig)
+        plt.close(fig)
+        st.divider()
+
+# =====================
+# Footer caption
+# =====================
 st.caption("""
 Clusters:
 - Cluster 1 – Below Average (Red)
