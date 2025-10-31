@@ -7,9 +7,10 @@ st.set_page_config(layout="wide")
 
 st.title("Regional Analysis: Income, Expenditures, and Social Mobility")
 st.write("""
-This section analyzes the dynamics of **income**, **expenditures**, and **social mobility** 
-by region and socio-economic cluster (Below average, Average, Above average).  
-Two datasets are available: all households and only stable households (those observed across all years).
+This tab presents visual analyses of **real income**, **expenditure**, and **household mobility**
+for all regions of Kazakhstan.  
+The first section shows all households, while the second focuses on households **present in all years (2020–2024)**,
+illustrating true **social mobility** dynamics.
 """)
 
 # =====================
@@ -24,44 +25,15 @@ def load_data():
 final_df, final_allhh_df = load_data()
 
 # =====================
-# Sidebar Controls
+# Common Formatting
 # =====================
-st.sidebar.header("Settings")
-dataset_choice = st.sidebar.radio(
-    "Choose dataset:",
-    ["All households", "Stable households (present in all years)"]
-)
+for df in [final_df, final_allhh_df]:
+    df["year"] = df["year"].astype(str)
+    df["territory_code"] = df["territory_code"].astype(str)
+    df["reassigned_cluster"] = df["reassigned_cluster"].astype(str)
 
-if dataset_choice == "All households":
-    df = final_df.copy()
-    metrics = [
-        ('average_income_real', 'Real Income'),
-        ('total_price_real', 'Real Base Expenditure'),
-        ('household_code', 'Household Mobility'),
-    ]
-else:
-    df = final_allhh_df.copy()
-    metrics = [
-        ('income_pct_change', 'Real Income Change (%)'),
-        ('price_pct_change', 'Real Base Expenditure Change (%)'),
-        ('count_pct_change', 'Household Mobility Change (%)'),
-    ]
+cluster_colors = {"1": "red", "2": "blue", "3": "green"}
 
-# Format
-df['year'] = df['year'].astype(str)
-df['territory_code'] = df['territory_code'].astype(str)
-df['reassigned_cluster'] = df['reassigned_cluster'].astype(str)
-
-cluster_colors = {
-    '1': 'red',    # below average
-    '2': 'blue',   # average
-    '3': 'green'   # above average
-}
-
-territories = sorted(df['territory_code'].unique())
-selected_territory = st.sidebar.selectbox("Select Territory Code:", territories)
-
-# optional: region name mapping (if you have oblast_to_region dict)
 oblast_to_region = {
     10: "Abay",
     11: "Akmola",
@@ -86,66 +58,135 @@ oblast_to_region = {
 }
 
 
-# =====================
-# Plot
-# =====================
 sns.set(style="whitegrid", font_scale=1.1)
-subset = df[df['territory_code'] == selected_territory]
 
-fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True)
-title_prefix = (
-    oblast_to_region[int(selected_territory)]
-    if int(selected_territory) in oblast_to_region
-    else f"Territory {selected_territory}"
-)
-fig.suptitle(f"{title_prefix}: Dynamics by Cluster (Base Year 2020)",
-             fontsize=16, fontweight='bold')
+# =====================
+# 1️⃣ ALL HOUSEHOLDS
+# =====================
+st.subheader("All Households — Dynamics by Region and Cluster")
 
-for i, (metric_col, title) in enumerate(metrics):
-    ax = axes[i]
-    sns.lineplot(
-        data=subset,
-        x='year',
-        y=metric_col,
-        hue='reassigned_cluster',
-        palette=cluster_colors,
-        marker='o',
-        ax=ax
+metrics_all = [
+    ("average_income_real", "Real Income"),
+    ("total_price_real", "Real Base Expenditure"),
+    ("household_code", "Household Mobility"),
+]
+
+territories = sorted(final_df["territory_code"].unique())
+
+for territory in territories:
+    subset = final_df[final_df["territory_code"] == territory]
+    if subset.empty:
+        continue
+
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True)
+    region_name = oblast_to_region.get(int(territory), f"Territory {territory}")
+    fig.suptitle(
+        f"{region_name}: Dynamics by Cluster (Base Year 2020)",
+        fontsize=16,
+        fontweight="bold",
     )
 
-    y_min = subset[metric_col].min()
-    y_max = subset[metric_col].max()
-    y_range = y_max - y_min
-    margin = y_range * 0.15 if y_range > 0 else 10
-    ax.set_ylim(y_min - margin, y_max + margin)
-
-    ax.set_title(title, fontsize=12, fontweight='bold')
-    ax.set_xlabel("Year")
-    ylabel = "Percentage Change (%)" if "%" in title else "Value (tenge)"
-    ax.set_ylabel(ylabel)
-    ax.axhline(0, color='gray', linestyle='--', linewidth=1)
-
-    if i == 2:
-        handles, labels = ax.get_legend_handles_labels()
-        ax.legend(
-            handles,
-            ['Below Avg (1)', 'Average (2)', 'Above Avg (3)'],
-            title="Cluster",
-            loc='upper left',
-            frameon=True
+    for i, (metric_col, title) in enumerate(metrics_all):
+        ax = axes[i]
+        sns.lineplot(
+            data=subset,
+            x="year",
+            y=metric_col,
+            hue="reassigned_cluster",
+            palette=cluster_colors,
+            marker="o",
+            ax=ax,
         )
-    else:
-        ax.get_legend().remove()
 
-fig.tight_layout(rect=[0, 0, 1, 0.95])
+        y_min, y_max = subset[metric_col].min(), subset[metric_col].max()
+        y_range = y_max - y_min
+        margin = y_range * 0.15 if y_range > 0 else 10
+        ax.set_ylim(y_min - margin, y_max + margin)
+        ax.set_title(title, fontsize=12, fontweight="bold")
+        ax.set_xlabel("Year")
+        ax.set_ylabel("Value (tenge)")
+        ax.axhline(0, color="gray", linestyle="--", linewidth=1)
 
-st.pyplot(fig)
+        if i == 2:
+            handles, labels = ax.get_legend_handles_labels()
+            ax.legend(
+                handles,
+                ["Below Avg (1)", "Average (2)", "Above Avg (3)"],
+                title="Cluster",
+                loc="upper left",
+                frameon=True,
+            )
+        else:
+            ax.get_legend().remove()
+
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    st.pyplot(fig)
+    plt.close(fig)  # ✅ ensure each plot renders separately
+    st.divider()
 
 # =====================
-# Data Table
+# 2️⃣ STABLE HOUSEHOLDS (present all years)
 # =====================
-st.subheader("Summary Table")
-st.dataframe(subset.head(20), use_container_width=True)
+st.subheader("Stable Households (Observed in All Years) — Social Mobility Dynamics")
+
+metrics_unique = [
+    ("income_pct_change", "Real Income Change (%)"),
+    ("price_pct_change", "Real Base Expenditure Change (%)"),
+    ("count_pct_change", "Real Household Mobility Change (%)"),
+]
+
+territories_unique = sorted(final_allhh_df["territory_code"].unique())
+
+for territory in territories_unique:
+    subset = final_allhh_df[final_allhh_df["territory_code"] == territory]
+    if subset.empty:
+        continue
+
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True)
+    region_name = oblast_to_region.get(int(territory), f"Territory {territory}")
+    fig.suptitle(
+        f"{region_name}: Dynamics by Cluster (Households Present in All Years)",
+        fontsize=16,
+        fontweight="bold",
+    )
+
+    for i, (metric_col, title) in enumerate(metrics_unique):
+        ax = axes[i]
+        sns.lineplot(
+            data=subset,
+            x="year",
+            y=metric_col,
+            hue="reassigned_cluster",
+            palette=cluster_colors,
+            marker="o",
+            ax=ax,
+        )
+
+        y_min, y_max = subset[metric_col].min(), subset[metric_col].max()
+        y_range = y_max - y_min
+        margin = y_range * 0.15 if y_range > 0 else 10
+        ax.set_ylim(y_min - margin, y_max + margin)
+        ax.set_title(title, fontsize=12, fontweight="bold")
+        ax.set_xlabel("Year")
+        ax.set_ylabel("Percentage Change (%)")
+        ax.axhline(0, color="gray", linestyle="--", linewidth=1)
+
+        if i == 2:
+            handles, labels = ax.get_legend_handles_labels()
+            ax.legend(
+                handles,
+                ["Below Avg (1)", "Average (2)", "Above Avg (3)"],
+                title="Cluster",
+                loc="upper left",
+                frameon=True,
+            )
+        else:
+            ax.get_legend().remove()
+
+    fig.tight_layout(rect=[0, 0, 1, 0.95])
+    st.pyplot(fig)
+    plt.close(fig)  # ✅ close figure so next one shows
+    st.divider()
 
 st.caption("""
 Clusters:
