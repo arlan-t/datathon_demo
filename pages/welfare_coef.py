@@ -31,7 +31,7 @@ df_scaled = load_welfare_data()
 st.sidebar.header("Adjust Social Index Weights")
 w1 = st.sidebar.slider("Employment (zan_vnedelu)", 0.0, 1.0, 0.0042, 0.001)
 w2 = st.sidebar.slider("Higher Education (higher_edu)", 0.0, 1.0, 0.00066, 0.001)
-w3 = st.sidebar.slider("Satisfaction (satisfaction)", 0.0, 1.0, 0.9280, 0.05)
+w3 = st.sidebar.slider("Satisfaction (satifaction)", 0.0, 1.0, 0.9280, 0.05)
 w4 = st.sidebar.slider("Total Income (total_income)", 0.0, 1.0, 0.3724, 0.05)
 
 st.sidebar.header("Adjust Economic Index Weights")
@@ -46,7 +46,7 @@ w8 = st.sidebar.slider("Taxes (tax(k))", 0.0, 1.0, 0.5061, 0.05)
 df_scaled["i_soc"] = (
     w1 * df_scaled["zan_vnedelu"] +
     w2 * df_scaled["higher_edu"] +
-    w3 * df_scaled["satisfaction"] +
+    w3 * df_scaled["satifaction"] +
     w4 * df_scaled["total_income"]
 )
 
@@ -102,3 +102,4 @@ st.plotly_chart(fig, use_container_width=True)
 # ======================
 with st.expander("Show calculated data"):
     st.dataframe(df_scaled[["region", "year", "i_soc", "i_econ", "k_sei"]])
+
