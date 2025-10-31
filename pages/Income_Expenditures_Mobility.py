@@ -1,19 +1,19 @@
 import streamlit as st
 import pandas as pd
-import plotly.graph_objects as go
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 st.set_page_config(layout="wide")
 
 st.title("Regional Analysis: Income, Expenditures, and Social Mobility")
 st.write("""
-This section analyzes changes in **real income**, **base expenditures**, and **household mobility** 
-across regions and social clusters.  
-Use the sidebar to switch between datasets (all households vs. stable households) 
-and explore how household well-being evolved between 2020–2024.
+This section analyzes the dynamics of **income**, **expenditures**, and **social mobility** 
+by region and socio-economic cluster (Below average, Average, Above average).  
+Two datasets are available: all households and only stable households (those observed across all years).
 """)
 
 # =====================
-# Data Loading
+# Load Data
 # =====================
 @st.cache_data
 def load_data():
@@ -23,38 +23,34 @@ def load_data():
 
 final_df, final_allhh_df = load_data()
 
-# Convert to string
-for df in [final_df, final_allhh_df]:
-    df['year'] = df['year'].astype(str)
-    df['territory_code'] = df['territory_code'].astype(str)
-    df['reassigned_cluster'] = df['reassigned_cluster'].astype(str)
-
 # =====================
-# Sidebar controls
+# Sidebar Controls
 # =====================
-st.sidebar.header("Dataset options")
+st.sidebar.header("Settings")
 dataset_choice = st.sidebar.radio(
-    "Select dataset:",
+    "Choose dataset:",
     ["All households", "Stable households (present in all years)"]
 )
 
 if dataset_choice == "All households":
-    df = final_df
+    df = final_df.copy()
     metrics = [
-        ("average_income_real", "Real Income"),
-        ("total_price_real", "Real Base Expenditure"),
-        ("household_code", "Household Mobility")
+        ('average_income_real', 'Real Income'),
+        ('total_price_real', 'Real Base Expenditure'),
+        ('household_code', 'Household Mobility'),
     ]
 else:
-    df = final_allhh_df
+    df = final_allhh_df.copy()
     metrics = [
-        ("income_pct_change", "Real Income Change (%)"),
-        ("price_pct_change", "Real Base Expenditure Change (%)"),
-        ("count_pct_change", "Household Mobility Change (%)")
+        ('income_pct_change', 'Real Income Change (%)'),
+        ('price_pct_change', 'Real Base Expenditure Change (%)'),
+        ('count_pct_change', 'Household Mobility Change (%)'),
     ]
 
-regions = sorted(df["territory_code"].unique())
-selected_region = st.sidebar.selectbox("Select Region (territory code):", regions)
+# Format
+df['year'] = df['year'].astype(str)
+df['territory_code'] = df['territory_code'].astype(str)
+df['reassigned_cluster'] = df['reassigned_cluster'].astype(str)
 
 cluster_colors = {
     '1': 'red',    # below average
@@ -62,50 +58,80 @@ cluster_colors = {
     '3': 'green'   # above average
 }
 
+territories = sorted(df['territory_code'].unique())
+selected_territory = st.sidebar.selectbox("Select Territory Code:", territories)
+
+# optional: region name mapping (if you have oblast_to_region dict)
+oblast_to_region = {
+    10: "Abai", 11: "Akmola", 15: "Atyrau", 27: "Zhambyl", 47: "Karaganda",
+    55: "Kostanay", 59: "Kyzylorda", 71: "Pavlodar", 75: "North Kazakhstan",
+    79: "East Kazakhstan", 83: "Mangystau", 95: "Almaty", 99: "Astana"
+}
+
 # =====================
-# Plot for selected region
+# Plot
 # =====================
-region_df = df[df["territory_code"] == selected_region].copy()
+sns.set(style="whitegrid", font_scale=1.1)
+subset = df[df['territory_code'] == selected_territory]
 
-st.subheader(f"Region {selected_region}: Dynamics by Cluster (Base Year 2020)")
-
-fig = go.Figure()
-
-for cluster, color in cluster_colors.items():
-    cluster_data = region_df[region_df["reassigned_cluster"] == cluster]
-    for metric, title in metrics:
-        fig.add_trace(go.Scatter(
-            x=cluster_data["year"],
-            y=cluster_data[metric],
-            mode="lines+markers",
-            name=f"Cluster {cluster} – {title}",
-            line=dict(color=color),
-            marker=dict(size=6)
-        ))
-
-fig.update_layout(
-    title=f"Income, Expenditures, and Mobility — Region {selected_region}",
-    xaxis_title="Year",
-    yaxis_title="Value / Change (%)",
-    hovermode="x unified",
-    height=650
+fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True)
+title_prefix = (
+    oblast_to_region[int(selected_territory)]
+    if int(selected_territory) in oblast_to_region
+    else f"Territory {selected_territory}"
 )
+fig.suptitle(f"{title_prefix}: Dynamics by Cluster (Base Year 2020)",
+             fontsize=16, fontweight='bold')
 
-st.plotly_chart(fig, use_container_width=True)
+for i, (metric_col, title) in enumerate(metrics):
+    ax = axes[i]
+    sns.lineplot(
+        data=subset,
+        x='year',
+        y=metric_col,
+        hue='reassigned_cluster',
+        palette=cluster_colors,
+        marker='o',
+        ax=ax
+    )
+
+    y_min = subset[metric_col].min()
+    y_max = subset[metric_col].max()
+    y_range = y_max - y_min
+    margin = y_range * 0.15 if y_range > 0 else 10
+    ax.set_ylim(y_min - margin, y_max + margin)
+
+    ax.set_title(title, fontsize=12, fontweight='bold')
+    ax.set_xlabel("Year")
+    ylabel = "Percentage Change (%)" if "%" in title else "Value (tenge)"
+    ax.set_ylabel(ylabel)
+    ax.axhline(0, color='gray', linestyle='--', linewidth=1)
+
+    if i == 2:
+        handles, labels = ax.get_legend_handles_labels()
+        ax.legend(
+            handles,
+            ['Below Avg (1)', 'Average (2)', 'Above Avg (3)'],
+            title="Cluster",
+            loc='upper left',
+            frameon=True
+        )
+    else:
+        ax.get_legend().remove()
+
+fig.tight_layout(rect=[0, 0, 1, 0.95])
+
+st.pyplot(fig)
 
 # =====================
-# Summary Table
+# Data Table
 # =====================
-st.subheader("Summary Data Table")
-st.dataframe(
-    region_df[["year", "reassigned_cluster"] + [m[0] for m in metrics]],
-    use_container_width=True
-)
+st.subheader("Summary Table")
+st.dataframe(subset.head(20), use_container_width=True)
 
 st.caption("""
-**Note:**  
-Clusters are defined as:
-- Cluster 1: Below average  
-- Cluster 2: Average  
-- Cluster 3: Above average
+Clusters:
+- Cluster 1 – Below Average (Red)
+- Cluster 2 – Average (Blue)
+- Cluster 3 – Above Average (Green)
 """)
