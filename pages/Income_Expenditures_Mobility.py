@@ -60,9 +60,26 @@ cluster_colors = {
 
 # optional region name map
 oblast_to_region = {
-    10: "Abai", 11: "Akmola", 15: "Atyrau", 27: "Zhambyl", 47: "Karaganda",
-    55: "Kostanay", 59: "Kyzylorda", 71: "Pavlodar", 75: "North Kazakhstan",
-    79: "East Kazakhstan", 83: "Mangystau", 95: "Almaty", 99: "Astana"
+    10: "Abay",
+    11: "Akmola",
+    15: "Aktobe",
+    19: "Almaty",
+    23: "Atyrau",
+    27: "West Kazakhstan",
+    31: "Jambyl",
+    33: 'Zhetysu',
+    35: "Karagandy",
+    39: "Kostanay",
+    43: "Kyzylorda",
+    47: "Mangystau",
+    55: "Pavlodar",
+    59: "North-Kazakhstan",
+    61: "Turkistan",
+    62: "Ulytau",
+    63: "East-Kazakhstan",
+    71: "Astana",
+    75: "Almaty city",
+    79: "Shymkent"
 }
 
 # =====================
