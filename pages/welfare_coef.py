@@ -21,7 +21,7 @@ st.markdown("### Формула в общем виде:")
 st.latex(r"K_{SEI} = \frac{I_{\mathrm{soc}}}{I_{\mathrm{econ}}}")
 
 st.markdown("**где:**")
-st.latex(r"I_{\mathrm{soc}} = w_1 \cdot S_{\mathrm{life}} + w_2 \cdot Income + w_3 \cdot Employment + w_4 \cdot Education + w_5 \cdot Housing + w_6 \cdot Leisure")
+st.latex(r"I_{\mathrm{soc}} = w_1 \cdot S_{\mathrm{life}} + w_2 \cdot Income + w_3 \cdot Employment + w_4 \cdot Education")
 st.latex(r"I_{\mathrm{econ}} = v_1 \cdot GRP + v_2 \cdot Invest + v_3 \cdot Tax + v_4 \cdot Employment")
 
 st.latex(r"I_{\mathrm{soc}} = \text{индекс социального благосостояния региона}")
@@ -119,6 +119,7 @@ st.plotly_chart(fig, use_container_width=True)
 # ======================
 with st.expander("Show calculated data"):
     st.dataframe(df_scaled[["region", "year", "i_soc", "i_econ", "k_sei"]])
+
 
 
 
