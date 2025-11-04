@@ -14,9 +14,9 @@ st.set_page_config(layout="wide")
 
 st.title("Анализ регионов: Доходы, Затраты, Социальная мобильность")
 st.write("""
-Эта страница демонстрирует динамику **доходов**, **затрат** и **социальной мобильности** домохозяйств разных социально-экономических групп   
+Эта страница демонстрирует динамику **доходов**, **затрат** и **социальной мобильности** домохозяйств разных социально-экономических классов   
 (Below average, Average, Above average) среди регионов Казахстана.
-Используйте боковую панель для переключения между **Все домохозяйтсва** и **Постоянные домохозяйства (существовавщие весь период)**.
+Используйте боковую панель для переключения между **Всеми домохозяйтсвами** и **Постоянными домохозяйствами (существовавщие весь период)**.
 """)
 # =====================
 # Load Data
@@ -77,8 +77,8 @@ sns.set(style="whitegrid", font_scale=1.1)
 # =====================
 # ALL HOUSEHOLDS
 # =====================
-if dataset_choice == "All households":
-    st.subheader("All Households — Dynamics by Region and Cluster")
+if dataset_choice == "Все домохозяйства":
+    st.subheader("Все домохозяйства — Динамика по Регионам и по Классам")
 
     metrics = [
         ("average_income_real", "Real Income"),
@@ -96,7 +96,7 @@ if dataset_choice == "All households":
         fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True)
         region_name = oblast_to_region.get(int(territory), f"Territory {territory}")
         fig.suptitle(
-            f"{region_name}: Dynamics by Cluster (Base Year 2020)",
+            f"{region_name}: Динамика по классам (Base Year 2020)",
             fontsize=16,
             fontweight="bold",
         )
@@ -143,7 +143,7 @@ if dataset_choice == "All households":
 # STABLE HOUSEHOLDS (present all years)
 # =====================
 else:
-    st.subheader("Stable Households (Observed in All Years) — Social Mobility Dynamics")
+    st.subheader("Постоянные домохозяйтсва — Динамика Социальной Мобильности")
 
     metrics = [
         ("income_pct_change", "Real Income Change (%)"),
@@ -161,7 +161,7 @@ else:
         fig, axes = plt.subplots(1, 3, figsize=(18, 5), sharex=True)
         region_name = oblast_to_region.get(int(territory), f"Territory {territory}")
         fig.suptitle(
-            f"{region_name}: Dynamics by Cluster (Households Present in All Years)",
+            f"{region_name}: Динамика по классам (Домохозяйства за весь период)",
             fontsize=16,
             fontweight="bold",
         )
