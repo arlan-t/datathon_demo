@@ -35,7 +35,7 @@ final_df, final_allhh_df = load_data()
 st.sidebar.header("Выбор датасета")
 dataset_choice = st.sidebar.radio(
     "Выберите датасет:",
-    ["Все домохозяйства", "Постоянные домохозяйтсва"]
+    ["All households", "Stable households"]
 )
 
 # =====================
@@ -77,7 +77,7 @@ sns.set(style="whitegrid", font_scale=1.1)
 # =====================
 # ALL HOUSEHOLDS
 # =====================
-if dataset_choice == "Все домохозяйства":
+if dataset_choice == "All households":
     st.subheader("Все домохозяйства — Динамика по Регионам и по Классам")
 
     metrics = [
