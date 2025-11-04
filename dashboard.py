@@ -206,8 +206,8 @@ if __name__ == "__main__":
     #          "In essence, it is a measure of the net investment gap for each region - the amount needed to fully restore infrastructure. "
     #          "We also used a linear model and projected the investment gap based on indicators such as population and wages, "
     #          "migration balance, depreciation, and various GRP indicators.")
-      st.subheader("Инвестиционный разрыв и износ")
-      st.write("Мы решили ввести переменную, которую назвали Инвестиционный разрыв. Это показатель, который показывает разницу между инвестициями в основной капитал и суммой износа."
+    st.subheader("Инвестиционный разрыв и износ")
+    st.write("Мы решили ввести переменную, которую назвали Инвестиционный разрыв. Это показатель, который показывает разницу между инвестициями в основной капитал и суммой износа."
              "В свою очередь, сумма износа считается по формуле <<Наличие основных средств (начальная стоимость) * степень износа>>. "
              "По сути, это показатель чистого дефицита инвестиций для каждого региона - сумма, нужная для полного восстановления инфраструктуры. "
              "Мы также ипользовали линейную модель и прогнозировали инвестиционный разрыв на базе таких показателей как население, зарплата, "
@@ -749,4 +749,5 @@ if __name__ == "__main__":
     with col4:
         animated_fig_priority = create_animated_map(map_df_priority, geojson_data, featureidkey, "Investment_Priority_Index")
         st.plotly_chart(animated_fig_priority, use_container_width=True)
+
 
