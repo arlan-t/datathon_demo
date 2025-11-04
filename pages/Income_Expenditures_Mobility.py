@@ -5,13 +5,19 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(layout="wide")
 
-st.title("Regional Analysis: Income, Expenditures, and Social Mobility")
-st.write("""
-This section visualizes the dynamics of **income**, **expenditure**, and **household mobility** 
-for different socio-economic clusters (Below average, Average, Above average) across Kazakhstan’s regions.  
-Use the sidebar to switch between **All households** and **Stable households (present in all years)**.
-""")
+# st.title("Regional Analysis: Income, Expenditures, and Social Mobility")
+# st.write("""
+# This section visualizes the dynamics of **income**, **expenditure**, and **household mobility** 
+# for different socio-economic clusters (Below average, Average, Above average) across Kazakhstan’s regions.  
+# Use the sidebar to switch between **All households** and **Stable households (present in all years)**.
+# """)
 
+st.title("Анализ регионов: Доходы, Затраты, Социальная мобильность")
+st.write("""
+Эта страница демонстрирует динамику **доходов**, **затрат** и **социальной мобильности** домохозяйств разных социально-экономических групп   
+(Below average, Average, Above average) среди регионов Казахстана.
+Используйте боковую панель для переключения между **All households** и **Stable households (present in all years)**.
+""")
 # =====================
 # Load Data
 # =====================
@@ -26,9 +32,9 @@ final_df, final_allhh_df = load_data()
 # =====================
 # Sidebar Controls
 # =====================
-st.sidebar.header("Dataset selection")
+st.sidebar.header("Выбор датасета")
 dataset_choice = st.sidebar.radio(
-    "Choose dataset:",
+    "Выберите датасет:",
     ["All households", "Stable households (present in all years)"]
 )
 
